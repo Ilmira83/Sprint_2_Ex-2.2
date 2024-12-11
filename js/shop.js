@@ -1,5 +1,5 @@
 // If you have time, you can move this variable "products" to a json or js file and load the data in this js. It will look more professional
-var products = [
+const products = [
     {
         id: 1,
         name: 'cooking oil',
@@ -70,29 +70,129 @@ var products = [
 // ** Don't hesitate to seek help from your peers or your mentor if you still struggle with debugging.
 
 // Improved version of cartList. Cart is an array of products (objects), but each one has a quantity field to define its quantity, so these products are not repeated.
-var cart = [];
+const cart = [];
 
-var total = 0;
+let total = 0;
 
 // Exercise 1
 function buy(id) {
-    // 1. Loop for to the array products to get the item to add to cart
-    // 2. Add found product to the cart array
+    let position = -1
+    for (let i = 0; i < products.length; i++) {
+        if (id == products[i].id) {
+            position = i;
+            break;
+        }
+    }
+
+    let productFound = false
+    for (let k = 0; k < cart.length; k++) {
+        if (products[position].id === cart[k].id) {
+            cart[k].quantity += 1
+            let indexToChange = cart.findIndex(item => item.id == products[position].id)
+            productFound = true
+
+            document.querySelector(`tr[data-id="${cart[indexToChange].id}"] td:nth-child(3)`).textContent = cart[indexToChange].quantity
+
+            let totalPrice = cart[indexToChange].quantity * cart[indexToChange].price
+            document.querySelector(`tr[data-id="${cart[indexToChange].id}"] td:nth-child(4)`).textContent = totalPrice 
+            break;
+        } 
+    }         
+    
+    if (productFound == false ) {
+        cart.push({...products[position], quantity: 1} )
+
+        let indexToAdd = cart.findIndex(item => item.id == products[position].id)
+        
+        const cartList = document.getElementById('cart_list');
+            
+        const row = document.createElement('tr');
+        row.setAttribute('data-id', products[position].id);
+
+        const productCell = document.createElement('th');
+        productCell.scope = 'row';
+        productCell.textContent = cart[indexToAdd].name;
+
+        const priceCell = document.createElement('td');
+        priceCell.textContent = cart[indexToAdd].price;
+
+        const quantityCell = document.createElement('td');
+        quantityCell.textContent = cart[indexToAdd].quantity
+
+        const totPriceCell = document.createElement('td');
+        totPriceCell.textContent = cart[indexToAdd].quantity * cart[indexToAdd].price
+
+        row.appendChild(productCell);
+        row.appendChild(priceCell);
+        row.appendChild(quantityCell);
+        row.appendChild(totPriceCell); 
+ 
+        cartList.appendChild(row);
+    } 
+
+    let cartQuantity = cart.reduce((tot, item) => {return tot + item.quantity}, 0)
+    document.getElementById('count_product').innerHTML = cartQuantity
+
+
+    calculateTotal()
+    applyPromotionsCart()
 }
 
 // Exercise 2
 function cleanCart() {
-
+  document.getElementById('cart_list').innerHTML = ''
+  document.getElementById('total_price').innerHTML = ''
+  document.getElementById('count_product').innerHTML = '0'
+  cart.length = 0
 }
+   
 
 // Exercise 3
 function calculateTotal() {
     // Calculate total price of the cart using the "cartList" array
+  let cartTotal = 0
+    for (let i = 0; i < cart.length; i++) {
+        cartTotal += cart[i].price * cart[i].quantity
+    }
+    document.getElementById('total_price').innerHTML  = cartTotal
+    total = cartTotal
 }
 
 // Exercise 4
 function applyPromotionsCart() {
     // Apply promotions to each item in the array "cart"
+    let discountIndex = -1 
+    for (let i = 0; i < cart.length; i++) {
+        if (cart[i].id == 1) {
+            discountIndex = i;
+            break;
+        }
+    }
+ 
+     if (discountIndex !== -1 && cart[discountIndex].quantity > 3) {
+        let discountedPrice = (cart[discountIndex].price * cart[discountIndex].quantity)*0.8
+        document.querySelector(`tr[data-id="${cart[discountIndex].id}"] td:nth-child(4)`).textContent = discountedPrice
+        document.getElementById('total_price').innerHTML  = total - cart[discountIndex].quantity * cart[discountIndex].price + discountedPrice
+    } else {
+        let totalPrice = cart[discountIndex].quantity * cart[discountIndex].price
+        document.querySelector(`tr[data-id="${cart[discountIndex].id}"] td:nth-child(4)`).textContent = totalPrice
+    }
+
+    let discIndex = -1 
+    for (let k = 0; k < cart.length; k++) {
+        if (cart[k].id == 3) {
+            discIndex = k;
+            break;
+        }
+    }
+     if (discIndex !== -1 && cart[discIndex].quantity > 10) {
+        let discPrice = (cart[discIndex].price * cart[discIndex].quantity)*0.7
+        document.querySelector(`tr[data-id="${cart[discIndex].id}"] td:nth-child(4)`).textContent = discPrice
+        document.getElementById('total_price').innerHTML  = total - cart[discIndex].quantity * cart[discIndex].price + discPrice
+    } else {
+        let totalPrice = cart[discIndex].quantity * cart[discIndex].price
+        document.querySelector(`tr[data-id="${cart[discIndex].id}"] td:nth-child(4)`).textContent = totalPrice
+    }
 }
 
 // Exercise 5
