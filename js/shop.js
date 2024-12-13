@@ -75,67 +75,33 @@ const cart = [];
 let total = 0;
 
 // Exercise 1
+function updateCart() {
+    applyPromotionsCart()
+    printCart()
+    calculateTotal() 
+}
+
 function buy(id) {
+    let productFound = false
     let position = -1
+
     for (let i = 0; i < products.length; i++) {
         if (id == products[i].id) {
-            position = i;
-            break;
+           position = i;
+           break;
         }
     }
-
-    let productFound = false
     for (let k = 0; k < cart.length; k++) {
         if (products[position].id === cart[k].id) {
             cart[k].quantity += 1
-            let indexToChange = cart.findIndex(item => item.id == products[position].id)
             productFound = true
-
-            document.querySelector(`tr[data-id="${cart[indexToChange].id}"] td:nth-child(3)`).textContent = cart[indexToChange].quantity
-
-            let totalPrice = cart[indexToChange].quantity * cart[indexToChange].price
-            document.querySelector(`tr[data-id="${cart[indexToChange].id}"] td:nth-child(4)`).textContent = totalPrice 
-            break;
         } 
     }         
     
     if (productFound == false ) {
-        cart.push({...products[position], quantity: 1} )
-
-        let indexToAdd = cart.findIndex(item => item.id == products[position].id)
-        
-        const cartList = document.getElementById('cart_list');
-            
-        const row = document.createElement('tr');
-        row.setAttribute('data-id', products[position].id);
-
-        const productCell = document.createElement('th');
-        productCell.scope = 'row';
-        productCell.textContent = cart[indexToAdd].name;
-
-        const priceCell = document.createElement('td');
-        priceCell.textContent = cart[indexToAdd].price;
-
-        const quantityCell = document.createElement('td');
-        quantityCell.textContent = cart[indexToAdd].quantity
-
-        const totPriceCell = document.createElement('td');
-        totPriceCell.textContent = cart[indexToAdd].quantity * cart[indexToAdd].price
-
-        row.appendChild(productCell);
-        row.appendChild(priceCell);
-        row.appendChild(quantityCell);
-        row.appendChild(totPriceCell); 
- 
-        cartList.appendChild(row);
+        cart.push({...products[position], quantity: 1})
     } 
-
-    let cartQuantity = cart.reduce((tot, item) => {return tot + item.quantity}, 0)
-    document.getElementById('count_product').innerHTML = cartQuantity
-
-
-    calculateTotal()
-    applyPromotionsCart()
+    updateCart()
 }
 
 // Exercise 2
@@ -145,59 +111,85 @@ function cleanCart() {
   document.getElementById('count_product').innerHTML = '0'
   cart.length = 0
 }
-   
 
 // Exercise 3
 function calculateTotal() {
     // Calculate total price of the cart using the "cartList" array
-  let cartTotal = 0
+    total = 0
+    
     for (let i = 0; i < cart.length; i++) {
-        cartTotal += cart[i].price * cart[i].quantity
+        let cellPrice = cart[i].price * cart[i].quantity
+        if (cart[i].offerPrice) {
+            if (cart[i].quantity > cart[i].offer.number) {
+                cellPrice = cart[i].quantity * cart[i].offerPrice      
+        }
     }
-    document.getElementById('total_price').innerHTML  = cartTotal
-    total = cartTotal
+        total +=  cellPrice
+    }
+         document.getElementById('total_price').innerHTML  = total
+    
 }
 
 // Exercise 4
 function applyPromotionsCart() {
     // Apply promotions to each item in the array "cart"
-    let discountIndex = -1 
-    for (let i = 0; i < cart.length; i++) {
-        if (cart[i].id == 1) {
-            discountIndex = i;
-            break;
-        }
-    }
- 
-     if (discountIndex !== -1 && cart[discountIndex].quantity > 3) {
-        let discountedPrice = (cart[discountIndex].price * cart[discountIndex].quantity)*0.8
-        document.querySelector(`tr[data-id="${cart[discountIndex].id}"] td:nth-child(4)`).textContent = discountedPrice
-        document.getElementById('total_price').innerHTML  = total - cart[discountIndex].quantity * cart[discountIndex].price + discountedPrice
-    } else {
-        let totalPrice = cart[discountIndex].quantity * cart[discountIndex].price
-        document.querySelector(`tr[data-id="${cart[discountIndex].id}"] td:nth-child(4)`).textContent = totalPrice
-    }
+    let discountProduct = -1
 
-    let discIndex = -1 
-    for (let k = 0; k < cart.length; k++) {
-        if (cart[k].id == 3) {
-            discIndex = k;
-            break;
+    for (let i = 0; i < cart.length; i++) {
+        if (cart[i].offer) {
+            discountProduct = i;
         }
     }
-     if (discIndex !== -1 && cart[discIndex].quantity > 10) {
-        let discPrice = (cart[discIndex].price * cart[discIndex].quantity)*0.7
-        document.querySelector(`tr[data-id="${cart[discIndex].id}"] td:nth-child(4)`).textContent = discPrice
-        document.getElementById('total_price').innerHTML  = total - cart[discIndex].quantity * cart[discIndex].price + discPrice
-    } else {
-        let totalPrice = cart[discIndex].quantity * cart[discIndex].price
-        document.querySelector(`tr[data-id="${cart[discIndex].id}"] td:nth-child(4)`).textContent = totalPrice
-    }
+    if (discountProduct != -1) {
+        let discount20 = cart[discountProduct].price * (1 - (cart[discountProduct].offer.percent/100))
+        cart[discountProduct].offerPrice = discount20
+    } 
 }
 
 // Exercise 5
 function printCart() {
     // Fill the shopping cart modal manipulating the shopping cart dom
+    const cartList = document.getElementById('cart_list')
+    cartList.innerHTML = ''
+
+    cart.forEach(item => {
+        const row = document.createElement('tr')
+        const productCell = document.createElement('th')
+        productCell.scope = 'row'
+        productCell.textContent = item.name
+
+        const priceCell = document.createElement('td')
+        priceCell.textContent = item.price
+
+        if(item.offerPrice) {
+              if (item.quantity > item.offer.number) {
+                priceCell.textContent = item.offerPrice 
+            }
+        } 
+
+        const quantityCell = document.createElement('td')
+        quantityCell.textContent = item.quantity
+
+        const totPriceCell = document.createElement('td')
+        totPriceCell.textContent = item.price * item.quantity
+    
+        if(item.offerPrice) {
+            if (item.quantity > item.offer.number) {
+                totPriceCell.textContent = item.offerPrice * item.quantity
+            }
+        } 
+        
+        row.appendChild(productCell)
+        row.appendChild(priceCell)
+        row.appendChild(quantityCell)
+        row.appendChild(totPriceCell)
+ 
+        cartList.appendChild(row)
+    })
+
+    document.getElementById('total_price').innerHTML  = total
+    let cartQuantity = cart.reduce((tot, item) => {return tot + item.quantity}, 0)
+    document.getElementById('count_product').innerHTML = cartQuantity
 }
 
 
@@ -209,5 +201,5 @@ function removeFromCart(id) {
 }
 
 function open_modal() {
-    printCart();
+    /* printCart(); */
 }
