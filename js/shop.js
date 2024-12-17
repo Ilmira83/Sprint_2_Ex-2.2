@@ -72,12 +72,15 @@ const products = [
 // Improved version of cartList. Cart is an array of products (objects), but each one has a quantity field to define its quantity, so these products are not repeated.
 let cart = [];
 let total = 0;
+let row = null
 
 // Exercise 1
 function updateCart() {
     applyPromotionsCart()
     printCart()
+    removeFromCart()
     calculateTotal() 
+
 }
 
 function buy(id) {
@@ -152,8 +155,8 @@ function printCart() {
     cartList.innerHTML = ''
 
     cart.forEach(item => {
-        const row = document.createElement('tr')
-        
+        row = document.createElement('tr')
+
         const productCell = document.createElement('th')
         productCell.scope = 'row'
         productCell.textContent = item.name
@@ -167,8 +170,36 @@ function printCart() {
             }
         } 
 
-        const quantityCell = document.createElement('td')
+        const totPriceCell = document.createElement('td')
+        totPriceCell.textContent = (item.price * item.quantity).toFixed(2)
+    
+        if(item.offerPrice) {
+            if (item.quantity > item.offer.number) {
+                totPriceCell.textContent = item.offerPrice * item.quantity
+            }
+        } 
+        
+        row.appendChild(productCell)
+        row.appendChild(priceCell)
+        row.appendChild(totPriceCell)
+ 
+        cartList.appendChild(row)
+    })
 
+    document.getElementById('total_price').innerHTML  = total
+
+    let cartQuantity = cart.reduce((tot, item) => {return tot + item.quantity}, 0)
+    document.getElementById('count_product').innerHTML = cartQuantity
+}
+
+
+// ** Nivell II **
+
+// Exercise 7
+function removeFromCart() {
+
+    cart.forEach(item => {
+        const quantityCell = document.createElement('td')
         const minusButton = document.createElement('button')
         minusButton.textContent = '-'
         minusButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'btn-centered')
@@ -200,37 +231,10 @@ function printCart() {
         quantityCell.appendChild(minusButton)
         quantityCell.appendChild(quantityText)
         quantityCell.appendChild(plusButton)
-        
 
-        const totPriceCell = document.createElement('td')
-        totPriceCell.textContent = (item.price * item.quantity).toFixed(2)
-    
-        if(item.offerPrice) {
-            if (item.quantity > item.offer.number) {
-                totPriceCell.textContent = item.offerPrice * item.quantity
-            }
-        } 
-        
-        row.appendChild(productCell)
-        row.appendChild(priceCell)
         row.appendChild(quantityCell)
-        row.appendChild(totPriceCell)
- 
-        cartList.appendChild(row)
+        row.insertBefore(quantityCell, row.children[2]);
     })
-
-    document.getElementById('total_price').innerHTML  = total
-
-    let cartQuantity = cart.reduce((tot, item) => {return tot + item.quantity}, 0)
-    document.getElementById('count_product').innerHTML = cartQuantity
-}
-
-
-// ** Nivell II **
-
-// Exercise 7
-function removeFromCart(id) {
-    
 }
 
 function open_modal() {
