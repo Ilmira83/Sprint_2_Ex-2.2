@@ -70,8 +70,7 @@ const products = [
 // ** Don't hesitate to seek help from your peers or your mentor if you still struggle with debugging.
 
 // Improved version of cartList. Cart is an array of products (objects), but each one has a quantity field to define its quantity, so these products are not repeated.
-const cart = [];
-
+let cart = [];
 let total = 0;
 
 // Exercise 1
@@ -154,6 +153,7 @@ function printCart() {
 
     cart.forEach(item => {
         const row = document.createElement('tr')
+        
         const productCell = document.createElement('th')
         productCell.scope = 'row'
         productCell.textContent = item.name
@@ -168,10 +168,42 @@ function printCart() {
         } 
 
         const quantityCell = document.createElement('td')
-        quantityCell.textContent = item.quantity
+
+        const minusButton = document.createElement('button')
+        minusButton.textContent = '-'
+        minusButton.classList.add('btn', 'btn-secondary', 'btn-sm', 'btn-centered')
+        minusButton.style.marginRight = '10px'; 
+        minusButton.style.width = '27px';
+        minusButton.style.height = '32px';
+        minusButton.onclick = () => {
+            if (item.quantity > 1) {
+                item.quantity -= 1;
+            } else if (item.quantity == 1) {
+                cart = cart.filter(cartItem => cartItem.id !== item.id);  
+            }
+                updateCart();
+        }
+        
+        const quantityText = document.createElement('span')
+        quantityText.textContent = item.quantity
+        quantityText.classList.add('quantity-text')
+
+        const plusButton = document.createElement('button')
+        plusButton.textContent = '+'
+        plusButton.classList.add('btn', 'btn-secondary', 'btn-sm', )
+        plusButton.style.marginLeft = '10px'; 
+        plusButton.onclick = () => { 
+            item.quantity += 1;
+            updateCart();
+        }        
+                  
+        quantityCell.appendChild(minusButton)
+        quantityCell.appendChild(quantityText)
+        quantityCell.appendChild(plusButton)
+        
 
         const totPriceCell = document.createElement('td')
-        totPriceCell.textContent = item.price * item.quantity
+        totPriceCell.textContent = (item.price * item.quantity).toFixed(2)
     
         if(item.offerPrice) {
             if (item.quantity > item.offer.number) {
@@ -188,6 +220,7 @@ function printCart() {
     })
 
     document.getElementById('total_price').innerHTML  = total
+
     let cartQuantity = cart.reduce((tot, item) => {return tot + item.quantity}, 0)
     document.getElementById('count_product').innerHTML = cartQuantity
 }
@@ -197,7 +230,7 @@ function printCart() {
 
 // Exercise 7
 function removeFromCart(id) {
-
+    
 }
 
 function open_modal() {
